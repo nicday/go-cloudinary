@@ -207,6 +207,18 @@ func (s *Service) DefaultUploadURI() *url.URL {
 	return s.uploadURI
 }
 
+// UploadURI sets the URI used to upload images to the Cloudinary service.
+func (s *Service) UploadURI(uri string) error {
+	u, err := url.Parse(uri)
+
+	if err != nil {
+		return err
+	}
+
+	s.uploadURI = u
+	return nil
+}
+
 // cleanAssetName returns an asset name from the parent dirname and
 // the file name without extension.
 // The combination
