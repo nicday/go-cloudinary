@@ -414,6 +414,8 @@ func (s *Service) uploadFile(fullPath string, data io.Reader, randomPublicId boo
 		// Body is JSON data and looks like:
 		// {"public_id":"Downloads/file","version":1369431906,"format":"png","resource_type":"image"}
 		dec := json.NewDecoder(resp.Body)
+		defer resp.Body.Close()
+
 		upInfo := new(uploadResponse)
 		if err := dec.Decode(upInfo); err != nil {
 			return fullPath, err
