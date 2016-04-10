@@ -40,6 +40,12 @@ const (
 	rawType         = "raw"
 )
 
+var (
+	// ErrUnexpectedURLPathFormat is raised when the URL path format doesn't have exactly 4 segments when split on `/`.
+	// A valid example URL: http://res.cloudinary.com/cloud-name/rtype/upload/public-id
+	ErrUnexpectedURLPathFormat = errors.New("unexpected URL path format")
+)
+
 type ResourceType int
 
 const (
@@ -516,6 +522,26 @@ func (s *Service) Url(publicId string, rtype ResourceType) string {
 		path = rawType
 	}
 	return fmt.Sprintf("%s/%s/%s/upload/%s", baseResourceUrl, s.cloudName, path, publicId)
+}
+
+// PublicID parses the uri as a URL and then splits the path on `/`, returning the 4th path segment. If there are not
+// exactly 4 path segments, ErrUnexpectedURLPathFormat will be returned.
+func (s Service) PublicID(uri string) (string, error) {
+	if uri == "" {
+		return "", ErrUnexpectedURLPathFormat
+	}
+
+	u, err := url.Parse(uri)
+	if err != nil {
+		return "", err
+	}
+
+	paths := strings.Split(u.Path, "/")
+	if len(paths) != 5 || paths[4] == "" {
+		return "", ErrUnexpectedURLPathFormat
+	}
+
+	return paths[4], nil
 }
 
 func handleHttpResponse(resp *http.Response) (map[string]interface{}, error) {

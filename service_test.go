@@ -109,22 +109,22 @@ func TestKeepFiles(t *testing.T) {
 	}
 }
 
-func TestUseDatabase(t *testing.T) {
-	s := new(Service)
-	if err := s.UseDatabase("baduri::"); err == nil {
-		t.Error("should fail on bad uri")
-	}
-	// Bad scheme
-	if err := s.UseDatabase("http://localhost"); err == nil {
-		t.Error("should fail if URL scheme different from mongodb://")
-	}
-	if err := s.UseDatabase("mongodb://localhost/cloudinary"); err != nil {
-		t.Error("please ensure you have a running MongoDB server on localhost")
-	}
-	if s.dbSession == nil || s.col == nil {
-		t.Error("service's dbSession and col should not be nil")
-	}
-}
+// func TestUseDatabase(t *testing.T) {
+// 	s := new(Service)
+// 	if err := s.UseDatabase("baduri::"); err == nil {
+// 		t.Error("should fail on bad uri")
+// 	}
+// 	// Bad scheme
+// 	if err := s.UseDatabase("http://localhost"); err == nil {
+// 		t.Error("should fail if URL scheme different from mongodb://")
+// 	}
+// 	if err := s.UseDatabase("mongodb://localhost/cloudinary"); err != nil {
+// 		t.Error("please ensure you have a running MongoDB server on localhost")
+// 	}
+// 	if s.dbSession == nil || s.col == nil {
+// 		t.Error("service's dbSession and col should not be nil")
+// 	}
+// }
 
 func TestCleanAssetName(t *testing.T) {
 	assets := [][4]string{
@@ -138,6 +138,34 @@ func TestCleanAssetName(t *testing.T) {
 		c := cleanAssetName(p[0], p[1], p[2])
 		if c != p[3] {
 			t.Errorf("wrong cleaned name. Expect '%s', got '%s'", p[3], c)
+		}
+	}
+}
+
+func TestPublicID(t *testing.T) {
+	urls := [][2]string{
+		// order: url, expected result
+		{"http://res.cloudinary.com/cloud-name/image/upload/857477010", "857477010"},
+		{"http://res.cloudinary.com/cloud-name/image/upload", ""},
+		{"http://res.cloudinary.com/cloud-name/image/upload/", ""},
+		{"http://res.cloudinary.com/cloud-name/image/upload/something/extra", ""},
+	}
+
+	s := &Service{
+		cloudName: "cloudname",
+		apiKey:    "login",
+		apiSecret: "secret",
+	}
+
+	for _, u := range urls {
+		id, err := s.PublicID(u[0])
+
+		if u[1] == "" && err != ErrUnexpectedURLPathFormat {
+			t.Errorf("wrong error returned. Expect '%s', got '%s'", u[1], err)
+		}
+
+		if id != u[1] {
+			t.Errorf("wrong public ID. Expect '%s', got '%s'", u[1], id)
 		}
 	}
 }
