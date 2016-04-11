@@ -599,13 +599,16 @@ func (s *Service) Delete(publicId, prepend string, rtype ResourceType) error {
 		return err
 	}
 
-	m, err := handleHttpResponse(resp)
+	_, err = handleHttpResponse(resp)
 	if err != nil {
 		return err
 	}
-	if e, ok := m["result"]; ok {
-		fmt.Println(e.(string))
-	}
+
+	// TODO (nicday): uncomment this when we logrus is implimented.
+	// if e, ok := _["result"]; ok {
+	// 	fmt.Println(e.(string))
+	// }
+
 	// Remove DB entry
 	if s.dbSession != nil {
 		if err := s.col.Remove(bson.M{"_id": prepend + publicId}); err != nil {
